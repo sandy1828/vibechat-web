@@ -1,0 +1,98 @@
+/* ===== NAVBAR CONTAINER ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 30px;
+
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.6);
+
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+/* DARK MODE */
+.navbar.dark {
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: white;
+}
+
+/* ===== LOGO ===== */
+.navbar-logo {
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+  transition: 0.2s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+/* ===== RIGHT SECTION ===== */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ===== THEME BUTTON ===== */
+.theme-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  color: inherit;
+}
+
+.theme-btn:hover {
+  transform: rotate(20deg) scale(1.1);
+}
+
+/* ===== PROFILE CIRCLE ===== */
+.profile-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  color: #000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-circle:hover {
+  transform: scale(1.1);
+}
+
+/* ===== LOGOUT BUTTON ===== */
+.logout-btn {
+  background: #ef4444;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}

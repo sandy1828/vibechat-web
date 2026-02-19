@@ -1,0 +1,108 @@
+.register-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  transition: 0.3s ease;
+}
+
+.register-container.dark {
+  background: linear-gradient(
+    to bottom,
+    #0f2027,
+    #203a43,
+    #2c5364
+  );
+}
+
+.register-card {
+  width: 380px;
+  padding: 40px;
+  border-radius: 25px;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  text-align: center;
+
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease;
+}
+
+.register-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.register-title {
+  color: white;
+  margin-bottom: 30px;
+  font-size: 26px;
+}
+
+.register-card input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border-radius: 15px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 15px;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 14px;
+  cursor: pointer;
+}
+
+.register-card button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 15px;
+  border: none;
+  background: #00f2fe;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.login-link {
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* ===== INPUT TEXT COLOR ===== */
+
+/* Light Mode */
+.register-container input {
+  color: #000;
+}
+
+/* Dark Mode */
+.register-container.dark input {
+  color: #fff;
+}
+
+/* ===== PLACEHOLDER COLOR ===== */
+
+/* Light Mode Placeholder */
+.register-container input::placeholder {
+  color: #000;
+  opacity: 1;
+}
+
+/* Dark Mode Placeholder */
+.register-container.dark input::placeholder {
+  color: #fff;
+  opacity: 1;
+}

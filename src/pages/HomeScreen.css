@@ -1,0 +1,111 @@
+/* ===== MAIN CONTAINER ===== */
+.home-container {
+  min-height: 100vh;
+  padding: 40px 0;
+  background: linear-gradient(to bottom, #ffffff, #dbeafe);
+  transition: 0.3s ease;
+  color: #000; /* 🔥 Force black text in light mode */
+}
+
+.home-container.dark {
+  background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+  color: #fff;
+}
+
+/* ===== HEADER ===== */
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.home-header h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+/* ===== THEME BUTTON ===== */
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ===== SEARCH BOX ===== */
+.search-box {
+  margin: 0 20px 20px;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.3);
+  padding: 14px 20px;
+  border-radius: 20px;
+}
+
+.search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  background: transparent;
+  color: #000; /* 🔥 Always black in light */
+}
+
+.home-container.dark .search-box input {
+  color: #fff;
+}
+
+/* ===== LIST ===== */
+.conversation-list {
+  padding-bottom: 40px;
+}
+
+/* ===== TRANSPARENT GLASS CARD ===== */
+.conversation-card {
+  margin: 0 20px 15px;
+  padding: 16px;
+  border-radius: 20px;
+
+  /* 🔥 Transparent Glass Look */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(15px);
+
+  border: 1px solid rgba(255,255,255,0.3);
+
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  position: relative;
+
+  color: #000; /* 🔥 Force black text */
+}
+
+.home-container.dark .conversation-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.conversation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+/* ===== DELETE BUTTON ===== */
+.delete-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ff3b30;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.delete-btn:hover {
+  transform: translateY(-50%) scale(1.08);
+}

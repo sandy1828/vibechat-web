@@ -1,0 +1,62 @@
+/* ===== CONTAINER ===== */
+.bubble-container {
+  display: flex;
+  margin: 8px 12px;
+  max-width: 100%;
+}
+
+.bubble-container.own {
+  justify-content: flex-end;
+}
+
+.bubble-container.other {
+  justify-content: flex-start;
+}
+
+/* ===== BUBBLE ===== */
+.bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  max-width: 65%;
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+/* OWN MESSAGE (RIGHT SIDE) */
+.bubble-container.own .bubble {
+  background-color: #25D366;
+  color: white; /* Always visible */
+}
+
+/* OTHER MESSAGE (LEFT SIDE - LIGHT MODE) */
+.bubble-container.other .bubble {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* OTHER MESSAGE (DARK MODE FIX) */
+.chat-container.dark .bubble-container.other .bubble {
+  background-color: #374151;
+  color: #ffffff;
+}
+
+/* ===== MESSAGE TEXT ===== */
+.message-text {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ===== TICKS ===== */
+.tick {
+  font-size: 12px;
+  text-align: right;
+  display: block;
+  opacity: 0.8;
+  color: inherit;
+}
+
+.seen {
+  color: #34B7F1; /* Blue tick */
+}
