@@ -1,7 +1,8 @@
 import React, {
   useEffect,
   useState,
-  useContext
+  useContext,
+  useCallback
 } from "react";
 
 import { useNavigate } from "react-router-dom";
@@ -14,18 +15,32 @@ import "./HomeScreen.css";
 
 export default function HomeScreen() {
 
-  const navigate = useNavigate(); // ✅ CORRECT WAY
+  const navigate = useNavigate();
 
   const { user } = useContext(AuthContext);
-  const { dark, toggleTheme } = useContext(ThemeContext);
+  const { dark } = useContext(ThemeContext); // ✅ removed toggleTheme
 
   const [conversations, setConversations] = useState([]);
   const [search, setSearch] = useState("");
 
+  /* ================= Fetch Conversations ================= */
+  const fetchConversations = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const res = await API.get(`/conversations/${user.id}`);
+      setConversations(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [user]);
+
+  /* ================= Initial Load ================= */
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [fetchConversations]);
 
+  /* ================= Socket Events ================= */
   useEffect(() => {
 
     if (!user) return;
@@ -36,20 +51,11 @@ export default function HomeScreen() {
     socket.on("messageStatusUpdate", fetchConversations);
 
     return () => {
-      socket.off("getMessage");
-      socket.off("messageStatusUpdate");
+      socket.off("getMessage", fetchConversations);
+      socket.off("messageStatusUpdate", fetchConversations);
     };
 
-  }, [user]);
-
-  const fetchConversations = async () => {
-    try {
-      const res = await API.get(`/conversations/${user.id}`);
-      setConversations(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  }, [user, fetchConversations]);
 
   const deleteConversation = async (id) => {
     try {
@@ -75,12 +81,10 @@ export default function HomeScreen() {
   return (
     <div className={`home-container ${dark ? "dark" : ""}`}>
 
-      {/* HEADER */}
       <div className="home-header">
         <h1>Chats</h1>
       </div>
 
-      {/* SEARCH */}
       <div className="search-box">
         <input
           type="text"
@@ -90,7 +94,6 @@ export default function HomeScreen() {
         />
       </div>
 
-      {/* LIST */}
       <div className="conversation-list">
         {filtered.map((item) => (
           <div key={item.conversationId} className="conversation-card">
