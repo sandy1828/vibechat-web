@@ -6,7 +6,7 @@ import "./Navbar.css";
 
 export default function Navbar() {
 
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const { dark, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
 
