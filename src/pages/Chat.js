@@ -83,7 +83,7 @@ export default function ChatScreen() {
       socket.off("getMessage");
     };
 
-  }, [id, receiverId, user?.id]);
+  }, [id, receiverId, user?.id, loadMessages]);
 
   /* ================= Scroll ================= */
   const scrollToBottom = () => {
@@ -91,15 +91,16 @@ export default function ChatScreen() {
   };
 
   /* ================= Load Messages ================= */
-  const loadMessages = async () => {
-    try {
-      const res = await API.get(`/message/${id}`);
-      setMessages(res.data);
-      setTimeout(scrollToBottom, 100);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const loadMessages = useCallback(async () => {
+  try {
+    const res = await API.get(`/message/${id}`);
+    setMessages(res.data);
+    setTimeout(scrollToBottom, 100);
+  } catch (err) {
+    console.log(err);
+  }
+}, [id]);
+
 
   /* ================= Send Message ================= */
   const sendMessage = async () => {
