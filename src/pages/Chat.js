@@ -25,6 +25,22 @@ export default function ChatScreen() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [receiverUser, setReceiverUser] = useState(null);
 
+  /* ================= Scroll ================= */
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  /* ================= Load Messages ================= */
+  const loadMessages = useCallback(async () => {
+    try {
+      const res = await API.get(`/message/${id}`);
+      setMessages(res.data);
+      setTimeout(scrollToBottom, 100);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [id]);
+
   /* ================= Redirect if no receiver ================= */
   useEffect(() => {
     if (!receiverId) {
@@ -85,23 +101,6 @@ export default function ChatScreen() {
 
   }, [id, receiverId, user?.id, loadMessages]);
 
-  /* ================= Scroll ================= */
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  /* ================= Load Messages ================= */
-  const loadMessages = useCallback(async () => {
-  try {
-    const res = await API.get(`/message/${id}`);
-    setMessages(res.data);
-    setTimeout(scrollToBottom, 100);
-  } catch (err) {
-    console.log(err);
-  }
-}, [id]);
-
-
   /* ================= Send Message ================= */
   const sendMessage = async () => {
     if (!text.trim() || !receiverId) return;
@@ -132,14 +131,9 @@ export default function ChatScreen() {
 
   return (
     <div className={`chat-container ${dark ? "dark" : ""}`}>
-
-      {/* ================= HEADER ================= */}
       <div className="chat-header">
         <div className="header-left">
-          <button
-            className="back-btn"
-            onClick={() => navigate(-1)}
-          >
+          <button className="back-btn" onClick={() => navigate(-1)}>
             ←
           </button>
 
@@ -164,7 +158,6 @@ export default function ChatScreen() {
         </div>
       </div>
 
-      {/* ================= MESSAGES ================= */}
       <div className="chat-messages">
         {messages.map((msg, index) => (
           <MessageBubble
@@ -176,14 +169,8 @@ export default function ChatScreen() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ================= Typing ================= */}
-      {typing && (
-        <div className="typing-text">
-          Typing...
-        </div>
-      )}
+      {typing && <div className="typing-text">Typing...</div>}
 
-      {/* ================= INPUT ================= */}
       <div className="chat-input">
         <input
           type="text"
@@ -191,7 +178,6 @@ export default function ChatScreen() {
           placeholder="Type a message..."
           onChange={(e) => {
             setText(e.target.value);
-
             socket.emit("typing", {
               to: receiverId,
               from: user?.id,
@@ -199,11 +185,8 @@ export default function ChatScreen() {
           }}
         />
 
-        <button onClick={sendMessage}>
-          ➤
-        </button>
+        <button onClick={sendMessage}>➤</button>
       </div>
-
     </div>
   );
 }
