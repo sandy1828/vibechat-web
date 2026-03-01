@@ -9,7 +9,6 @@ export default function MessageBubble({
   onReact,
 }) {
   const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const lastTapRef = useRef(null);
 
   /* ================= REPLY MESSAGE FIND ================= */
@@ -23,7 +22,6 @@ export default function MessageBubble({
   /* ================= DRAG TO REPLY ================= */
 
   const handleMouseDown = (e) => {
-    setIsDragging(true);
     const startX = e.clientX;
 
     const handleMouseMove = (moveEvent) => {
@@ -36,7 +34,6 @@ export default function MessageBubble({
         onReply && onReply(message);
       }
       setDragX(0);
-      setIsDragging(false);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
@@ -63,6 +60,7 @@ export default function MessageBubble({
     if (message.status === "delivered") return "✓✓";
     if (message.status === "seen")
       return <span className="seen">✓✓</span>;
+    return null;
   };
 
   /* ================= GROUP REACTIONS ================= */
@@ -84,10 +82,8 @@ export default function MessageBubble({
         onReact && onReact(message);
       }}
     >
-      {/* Reply Arrow */}
       {dragX > 40 && <div className="reply-arrow">↩</div>}
 
-      {/* Reply Preview */}
       {repliedMessage && (
         <div className="reply-box">
           <div className="reply-sender">
@@ -101,12 +97,10 @@ export default function MessageBubble({
         </div>
       )}
 
-      {/* Main Message */}
       <div className="message-text">
         {message.message}
       </div>
 
-      {/* Emoji Reactions */}
       {Object.keys(groupedReactions).length > 0 && (
         <div className="reaction-container">
           {Object.entries(groupedReactions).map(
@@ -119,7 +113,6 @@ export default function MessageBubble({
         </div>
       )}
 
-      {/* Tick */}
       {own && (
         <div className="tick">
           {getTick()}
