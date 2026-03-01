@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import socket from "../services/socket";
@@ -16,6 +22,7 @@ export default function ChatScreen() {
   const { dark } = useContext(ThemeContext);
 
   const receiverId = location.state?.receiverId;
+  const receiverUser = location.state?.receiverUser;
 
   const messagesEndRef = useRef(null);
 
@@ -23,14 +30,23 @@ export default function ChatScreen() {
   const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [receiverUser, setReceiverUser] = useState(null);
 
-  /* ================= Scroll ================= */
+  /* ========== Safety ========== */
+  useEffect(() => {
+    if (!receiverId || !receiverUser) navigate("/");
+  }, [receiverId, receiverUser, navigate]);
+
+  /* ========== Scroll ========== */
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  /* ================= Load Messages ================= */
+  /* ========== Add User Online ========== */
+  useEffect(() => {
+    if (user?.id) socket.emit("addUser", user.id);
+  }, [user]);
+
+  /* ========== Load Messages ========== */
   const loadMessages = useCallback(async () => {
     try {
       const res = await API.get(`/message/${id}`);
@@ -41,127 +57,141 @@ export default function ChatScreen() {
     }
   }, [id]);
 
-  /* ================= Redirect if no receiver ================= */
   useEffect(() => {
-    if (!receiverId) {
-      navigate("/");
-    }
-  }, [receiverId, navigate]);
-
-  /* ================= Fetch Receiver User ================= */
-  useEffect(() => {
-    if (!receiverId) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await API.get(`/user/${receiverId}`);
-        setReceiverUser(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchUser();
-  }, [receiverId]);
-
-  const isOnline = onlineUsers.some(
-    (u) => u.userId === receiverId
-  );
-
-  /* ================= Load Messages + Socket ================= */
-  useEffect(() => {
-    if (!receiverId) return;
-
     loadMessages();
+  }, [loadMessages]);
 
-    socket.emit("markAsSeen", {
+  /* ========== Socket Events ========== */
+ useEffect(() => {
+  if (!receiverId) return;
+
+  socket.emit("markAsSeen", {
+    conversationId: id,
+    viewerId: user?.id,
+  });
+
+  socket.on("getUsers", (users) => {
+    setOnlineUsers(users);
+  });
+
+  socket.on("typing", ({ from }) => {
+    if (from === receiverId) {
+      setTyping(true);
+      setTimeout(() => setTyping(false), 2000);
+    }
+  });
+
+  socket.on("getMessage", (data) => {
+    setMessages((prev) => {
+      const exists = prev.some((msg) => msg._id === data._id);
+      if (exists) return prev;
+      return [...prev, data];
+    });
+
+    scrollToBottom();
+  });
+
+  // ✅ FIXED: status update listener inside useEffect
+  socket.on("messageStatusUpdate", ({ messageId, status }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId ? { ...msg, status } : msg
+      )
+    );
+  });
+
+  socket.on("messagesSeen", ({ conversationId }) => {
+    if (conversationId !== id) return;
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.senderId === user.id
+          ? { ...msg, status: "seen" }
+          : msg
+      )
+    );
+  });
+
+  return () => {
+    socket.off("getUsers");
+    socket.off("typing");
+    socket.off("getMessage");
+    socket.off("messageStatusUpdate");
+    socket.off("messagesSeen");
+  };
+}, [id, receiverId, user?.id]);
+
+  /* ========== Send Message ========== */
+  const sendMessage = async () => {
+    if (!text.trim()) return;
+
+    const tempId = Date.now().toString();
+
+    const tempMessage = {
+      _id: tempId,
       conversationId: id,
-      viewerId: user?.id,
-    });
-
-    socket.on("getUsers", setOnlineUsers);
-
-    socket.on("typing", ({ from }) => {
-      if (from === receiverId) {
-        setTyping(true);
-        setTimeout(() => setTyping(false), 2000);
-      }
-    });
-
-    socket.on("getMessage", (data) => {
-      setMessages((prev) => [...prev, data]);
-      scrollToBottom();
-    });
-
-    return () => {
-      socket.off("getUsers");
-      socket.off("typing");
-      socket.off("getMessage");
+      senderId: user.id,
+      receiverId,
+      message: text,
+      createdAt: new Date(),
+      status: "sent",
+      temp: true,
     };
 
-  }, [id, receiverId, user?.id, loadMessages]);
-
-  /* ================= Send Message ================= */
-  const sendMessage = async () => {
-    if (!text.trim() || !receiverId) return;
+    setMessages((prev) => [...prev, tempMessage]);
+    scrollToBottom();
+    setText("");
 
     try {
       const res = await API.post("/message", {
         conversationId: id,
         senderId: user.id,
-        receiverId: receiverId,
-        message: text,
+        receiverId,
+        message: tempMessage.message,
       });
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId ? { ...res.data, status: "delivered" } : msg,
+        ),
+      );
 
       socket.emit("sendMessage", {
-        messageId: res.data.messageId,
-        conversationId: id,
-        senderId: user.id,
-        receiverId: receiverId,
-        message: text,
+        ...res.data,
+        receiverId,
       });
-
-      setText("");
     } catch (err) {
       console.log(err);
     }
   };
 
+  const isOnline = onlineUsers.some((u) =>
+    typeof u === "string" ? u === receiverId : u.userId === receiverId,
+  );
+
   if (!receiverId) return null;
 
   return (
     <div className={`chat-container ${dark ? "dark" : ""}`}>
+      {/* HEADER */}
       <div className="chat-header">
         <div className="header-left">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            ←
-          </button>
+          <button onClick={() => navigate(-1)}>←</button>
 
-          <div className="user-info">
-            <div
-              className="online-dot"
-              style={{
-                backgroundColor: isOnline ? "#25D366" : "gray",
-              }}
-            />
+          <div className="avatar">{receiverUser?.fullName?.charAt(0)}</div>
 
-            <div>
-              <div className="user-name">
-                {receiverUser?.fullName || "Loading..."}
-              </div>
-
-              <div className="user-status">
-                {isOnline ? "Online" : "Last seen recently"}
-              </div>
-            </div>
+          <div>
+            <div>{receiverUser?.fullName}</div>
+            <div className="status">{isOnline ? "Online" : "Offline"}</div>
           </div>
         </div>
       </div>
 
+      {/* MESSAGES */}
       <div className="chat-messages">
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <MessageBubble
-            key={index}
+            key={msg._id}
             message={msg}
             own={msg.senderId === user?.id}
           />
@@ -169,13 +199,12 @@ export default function ChatScreen() {
         <div ref={messagesEndRef} />
       </div>
 
-      {typing && <div className="typing-text">Typing...</div>}
+      {typing && <div className="typing">Typing...</div>}
 
+      {/* INPUT */}
       <div className="chat-input">
         <input
-          type="text"
           value={text}
-          placeholder="Type a message..."
           onChange={(e) => {
             setText(e.target.value);
             socket.emit("typing", {
@@ -183,8 +212,9 @@ export default function ChatScreen() {
               from: user?.id,
             });
           }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Type message..."
         />
-
         <button onClick={sendMessage}>➤</button>
       </div>
     </div>

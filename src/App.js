@@ -17,6 +17,7 @@ import Register from "./pages/RegisterScreen";
 import Home from "./pages/HomeScreen";
 import Chat from "./pages/Chat";
 import Profile from "./pages/ProfileScreen";
+import CallScreen from "./pages/CallScreen";
 
 /* ================= PROTECTED ROUTE ================= */
 function PrivateRoute() {
@@ -64,6 +65,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/chat/:id" element={<Chat />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/call/:id" element={<CallScreen />} />
               </Route>
             </Route>
 

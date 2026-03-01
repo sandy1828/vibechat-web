@@ -1,0 +1,78 @@
+.call-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.call-card {
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 48px;
+  margin: auto;
+  margin-bottom: 20px;
+  animation: pulse 1.5s infinite;
+}
+
+.call-actions {
+  margin-top: 40px;
+}
+
+.end-btn {
+  background: #ff3b30;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 50px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.end-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37,211,102, 0.7); }
+  70% { box-shadow: 0 0 0 25px rgba(37,211,102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,211,102, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.accept-btn {
+  background: #25D366;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 50px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.reject-btn {
+  background: #ff3b30;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 50px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+}

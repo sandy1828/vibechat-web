@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useCallback
-} from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
@@ -14,48 +9,86 @@ import ConversationItem from "../components/ConversationItem";
 import "./HomeScreen.css";
 
 export default function HomeScreen() {
-
   const navigate = useNavigate();
-
   const { user } = useContext(AuthContext);
-  const { dark } = useContext(ThemeContext); // ✅ removed toggleTheme
+  const { dark } = useContext(ThemeContext);
 
   const [conversations, setConversations] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const [search, setSearch] = useState("");
 
-  /* ================= Fetch Conversations ================= */
+  /* ================= FETCH CONVERSATIONS ================= */
+
   const fetchConversations = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id) return;
 
     try {
       const res = await API.get(`/conversations/${user.id}`);
-      setConversations(res.data);
+
+      // ✅ Always ensure array
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      // ✅ Sort latest first
+      const sorted = data.sort(
+        (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0),
+      );
+
+      setConversations(sorted);
     } catch (err) {
-      console.log(err);
+      console.log("Fetch Error:", err);
+      setConversations([]);
     }
   }, [user]);
 
-  /* ================= Initial Load ================= */
+  /* ================= INITIAL LOAD ================= */
+
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  /* ================= Socket Events ================= */
-  useEffect(() => {
 
-    if (!user) return;
+
+  // call
+
+  useEffect(() => {
+  if (!user?.id) return;
+
+  socket.emit("addUser", user.id);
+
+  socket.on("incomingCall", ({ from, offer }) => {
+    navigate(`/call/${from}`, {
+      state: {
+        incoming: true,
+        offer
+      }
+    });
+  });
+
+  return () => {
+    socket.off("incomingCall");
+  };
+}, [user]);
+
+
+  /* ================= SOCKET ================= */
+
+  useEffect(() => {
+    if (!user?.id) return;
 
     socket.emit("addUser", user.id);
 
+    socket.on("getUsers", setOnlineUsers);
     socket.on("getMessage", fetchConversations);
     socket.on("messageStatusUpdate", fetchConversations);
 
     return () => {
-      socket.off("getMessage", fetchConversations);
-      socket.off("messageStatusUpdate", fetchConversations);
+      socket.off("getUsers");
+      socket.off("getMessage");
+      socket.off("messageStatusUpdate");
     };
-
   }, [user, fetchConversations]);
+
+  /* ================= DELETE ================= */
 
   const deleteConversation = async (id) => {
     try {
@@ -66,25 +99,31 @@ export default function HomeScreen() {
     }
   };
 
-  const openChat = (conversationId, receiverId) => {
+  /* ================= OPEN CHAT ================= */
+  /* ================= OPEN CHAT ================= */
+  const openChat = (conversationId, chatUser) => {
     navigate(`/chat/${conversationId}`, {
-      state: { receiverId }
+      state: {
+        receiverId: chatUser.receiverId,
+        receiverUser: chatUser,
+      },
     });
   };
 
+  /* ================= SEARCH ================= */
+
   const filtered = conversations.filter((conv) =>
-    conv.user.fullName
-      .toLowerCase()
-      .includes(search.toLowerCase())
+    conv?.user?.fullName?.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className={`home-container ${dark ? "dark" : ""}`}>
-
+      {/* HEADER */}
       <div className="home-header">
         <h1>Chats</h1>
       </div>
 
+      {/* SEARCH */}
       <div className="search-box">
         <input
           type="text"
@@ -94,33 +133,37 @@ export default function HomeScreen() {
         />
       </div>
 
+      {/* LIST */}
       <div className="conversation-list">
-        {filtered.map((item) => (
-          <div key={item.conversationId} className="conversation-card">
+        {filtered.length === 0 && (
+          <p className="empty-text">No Conversations Found</p>
+        )}
 
-            <ConversationItem
-              item={item}
-              onClick={() =>
-                openChat(
-                  item.conversationId,
-                  item.user.receiverId
-                )
-              }
-            />
+        {filtered.map((item) => {
+          if (!item?.user) return null;
 
-            <button
-              className="delete-btn"
-              onClick={() =>
-                deleteConversation(item.conversationId)
-              }
-            >
-              Delete
-            </button>
+          const isOnline = onlineUsers.some(
+            (u) => u.userId === item.user.receiverId,
+          );
 
-          </div>
-        ))}
+          return (
+            <div key={item.conversationId} className="conversation-card">
+              <ConversationItem
+                item={item}
+                isOnline={isOnline}
+                onClick={() => openChat(item.conversationId, item.user)}
+              />
+
+              <button
+                className="delete-btn"
+                onClick={() => deleteConversation(item.conversationId)}
+              >
+                Delete
+              </button>
+            </div>
+          );
+        })}
       </div>
-
     </div>
   );
 }
